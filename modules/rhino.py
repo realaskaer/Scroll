@@ -14,7 +14,8 @@ from utils.stark_signature.eth_coder import encrypt_with_public_key, decrypt_wit
 from settings import (
     RHINO_AMOUNT_MAX,
     RHINO_AMOUNT_MIN,
-    RHINO_CHAIN_ID_TO
+    RHINO_CHAIN_ID_TO,
+    RHINO_CHAIN_ID_FROM
 )
 
 REGISTER_DATA = {
@@ -265,7 +266,9 @@ class Rhino(Bridge):
             "isBridge": False,
         }
 
-        return await self.make_request(method='POST', url=url, headers=headers, json=payload)
+        await self.make_request(method='POST', url=url, headers=headers, json=payload)
+
+        self.client.logger.success(f"{self.client.info} Rhino | Withdraw compete")
 
     async def bridge(self):
 
@@ -285,9 +288,10 @@ class Rhino(Bridge):
 
         await asyncio.sleep(1)
 
+        chain_from_name = RHINO_CHAIN_INFO[random.choice(RHINO_CHAIN_ID_FROM)]
         chain_to_name = RHINO_CHAIN_INFO[random.choice(RHINO_CHAIN_ID_TO)]
 
-        source_chain_info = rhino_user_config['DVF']['bridgeConfigPerChain'][chain_to_name]
+        source_chain_info = rhino_user_config['DVF']['bridgeConfigPerChain'][chain_from_name]
 
         amount = self.client.round_amount(RHINO_AMOUNT_MIN, RHINO_AMOUNT_MAX)
 
