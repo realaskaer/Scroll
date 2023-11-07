@@ -278,7 +278,7 @@ class Rhino(Bridge):
             await self.reg_new_acc()
 
         await asyncio.sleep(1)
-
+        return
         self.client.logger.success(f"{self.client.info} Rhino | Already registered")
 
         await asyncio.sleep(1)
