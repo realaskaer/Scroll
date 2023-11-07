@@ -7,7 +7,7 @@ import asyncio
 from modules import Bridge
 from config import RHINO_CHAIN_INFO
 from datetime import datetime, timezone
-from utils.tools import repeater, gas_checker
+from utils.tools import repeater, gas_checker, sleep
 from eth_account.messages import encode_defunct
 from utils.stark_signature.stark_singature import sign, pedersen_hash, EC_ORDER, private_to_stark_key
 from utils.stark_signature.eth_coder import encrypt_with_public_key, decrypt_with_private_key, get_public_key
@@ -215,6 +215,7 @@ class Rhino(Bridge):
         tx_signature = sign(msg_hash=msg_hash, priv_key=stark_dtk_private_key)
         return hex(tx_signature[0]), hex(tx_signature[1])
 
+    @repeater
     async def withdraw_from_rhino(self, rhino_user_config, amount, chain_name):
 
         logger_info = f"{self.client.info} Rhino | Withdraw {amount} ETH from Rhino.fi to {chain_name.capitalize()}"
@@ -266,7 +267,6 @@ class Rhino(Bridge):
 
         return await self.make_request(method='POST', url=url, headers=headers, json=payload)
 
-    @repeater
     async def bridge(self):
 
         self.client.logger.info(f"{self.client.info} Rhino | Check previous registration")
@@ -274,18 +274,20 @@ class Rhino(Bridge):
         rhino_user_config = await self.get_user_config()
 
         if not rhino_user_config['isRegistered']:
-            self.client.logger.info(f"{self.client.info} Rhino | New user on Rhino, start registration")
+            await asyncio.sleep(1)
+            self.client.logger.info(f"{self.client.info} Rhino | New user on Rhino, make registration")
             await self.reg_new_acc()
+            await asyncio.sleep(1)
+            self.client.logger.success(f"{self.client.info} Rhino | Successfully registered")
+            rhino_user_config = await self.get_user_config()
+        else:
+            self.client.logger.success(f"{self.client.info} Rhino | Already registered")
 
         await asyncio.sleep(1)
-
-        self.client.logger.success(f"{self.client.info} Rhino | Already registered")
-
-        await asyncio.sleep(1)
-
-        source_chain_info = rhino_user_config['DVF']['bridgeConfigPerChain']['ZKSYNC']
 
         chain_to_name = RHINO_CHAIN_INFO[random.choice(RHINO_CHAIN_ID_TO)]
+
+        source_chain_info = rhino_user_config['DVF']['bridgeConfigPerChain'][chain_to_name]
 
         amount = self.client.round_amount(RHINO_AMOUNT_MIN, RHINO_AMOUNT_MAX)
 
@@ -295,5 +297,7 @@ class Rhino(Bridge):
         await asyncio.sleep(1)
 
         await self.deposit_to_rhino(amount=amount, source_chain_info=source_chain_info)
+
+        await sleep(self, 90, 120)
 
         await self.withdraw_from_rhino(rhino_user_config=rhino_user_config, amount=amount, chain_name=chain_to_name)
