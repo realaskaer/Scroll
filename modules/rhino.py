@@ -115,6 +115,18 @@ class Rhino(Bridge):
 
         return await self.make_request(method='POST', url=url, headers=self.headers, json=data)
 
+    async def get_vault_id(self):
+
+        url = "https://api.rhino.fi/v1/trading/r/getVaultId"
+
+        data = {
+            'nonce': self.nonce,
+            'signature': self.signature,
+            'token': 'ETH'
+        }
+
+        return await self.make_request(method='POST', url=url, headers=self.headers, json=data)
+
     @repeater
     async def reg_new_acc(self):
 
@@ -216,7 +228,7 @@ class Rhino(Bridge):
         tx_signature = sign(msg_hash=msg_hash, priv_key=stark_dtk_private_key)
         return hex(tx_signature[0]), hex(tx_signature[1])
 
-    @repeater
+    #@repeater
     async def withdraw_from_rhino(self, rhino_user_config, amount, chain_name):
 
         logger_info = f"{self.client.info} Rhino | Withdraw {amount} ETH from Rhino.fi to {chain_name.capitalize()}"
@@ -228,7 +240,7 @@ class Rhino(Bridge):
         receiver_vault_id, receiver_public_key = (await self.get_vault_id_and_stark_key(deversifi_address)).values()
 
         sender_public_key = rhino_user_config['starkKeyHex']
-        sender_vault_id = rhino_user_config['tokenRegistry']['ETH']['starkVaultId']
+        sender_vault_id = await self.get_vault_id()
         token_address = rhino_user_config['tokenRegistry']['ETH']['starkTokenId']
 
         expiration_timestamp = int(time.time() / 3600) + 4320
