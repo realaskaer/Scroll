@@ -6,7 +6,7 @@ import random
 import asyncio
 from modules import Bridge
 from datetime import datetime, timezone
-from utils.tools import repeater, gas_checker, sleep
+from utils.tools import gas_checker, sleep
 from eth_account.messages import encode_defunct
 from utils.stark_signature.stark_singature import sign, pedersen_hash, EC_ORDER, private_to_stark_key
 from utils.stark_signature.eth_coder import encrypt_with_public_key, decrypt_with_private_key, get_public_key
@@ -120,7 +120,6 @@ class Rhino(Bridge):
 
         return await self.make_request(method='POST', url=url, headers=self.headers, json=data)
 
-    @repeater
     async def reg_new_acc(self):
 
         url = 'https://api.rhino.fi/v1/trading/w/register'
@@ -200,8 +199,9 @@ class Rhino(Bridge):
         url = "https://api.rhino.fi/v1/trading/r/getBalance"
 
         response = await self.make_request(method="POST", url=url, headers=self.headers, json=data)
-
-        return response[0]['available']
+        if response:
+            return response[0]['available']
+        return 0
 
     async def get_stark_signature(self, amount_in_wei, expiration_timestamp, tx_nonce, receiver_public_key,
                                   receiver_vault_id, sender_vault_id, token_address):
