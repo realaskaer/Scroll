@@ -48,7 +48,7 @@ async def check_proxies_status(proxies: list):
 
 async def check_proxy_status(proxy:str):
     try:
-        w3 = AsyncWeb3(AsyncHTTPProvider(random.choice(Scroll.rpc), request_kwargs={"proxy": f"http://{proxy}"}))
+        w3 = AsyncWeb3(AsyncHTTPProvider(random.choice(ScrollRPC.rpc), request_kwargs={"proxy": f"http://{proxy}"}))
         if await w3.is_connected():
             cprint(f'✅ Proxy {proxy[proxy.find("@"):]} successfully connected to Scroll RPC', 'light_green')
             return True

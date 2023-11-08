@@ -3,24 +3,37 @@
     Choose withdrawal | deposit network. The software works only with ETH withdraw | deposit
     Don't forget to insert your API_KEYs
     
-    1 - ETH-ERC20
+   *1 - ETH-ERC20
     2 - ETH-Arbitrum One
-    3 - ETH-zkSync Lite
+   *3 - ETH-zkSync Lite
     4 - ETH-Optimism
-    5 - ETH-Starknet
+   *5 - ETH-Starknet
     6 - ETH-zkSync Era
     7 - ETH-Linea
-    
+
+    * - software cant deposit to these chains (see OKX_DEPOSIT_NETWORK)
+
     OKX_WITHDRAW_NETWORK = 6
     OKX_AMOUNT_MIN = 0.009  ( ETH )
     OKX_AMOUNT_MAX = 0.012  ( ETH )
-    OKX_DEPOSIT_NETWORK = 6
+
+    OKX_BRIDGE_NEED = True | Here you can set the need for a bridge to withdraw money.
+                             Maybe you already have money in the withdrawal network? (IF YES = SET FALSE)
+    OKX_DEPOSIT_NETWORK = 2
+    OKX_DEPOSIT_AMOUNT = 90 | % of MAX TOKEN BALANCE. Will withdraw this amount from the largest token balance in SCROLL
+    OKX_BRIDGE_MODE = [1, 2, 3] | 1 - Rhino.fi, 2 - Orbiter, 3 - LayerSwap. Select the bridges you need
+     to transfer your funds to the network, which you choose in OKX_DEPOSIT_NETWORK. One bridge in list will be chosen.
+
 ------------------------------------------------------------------------------------------------------------------------
 """
-OKX_WITHDRAW_NETWORK = 6
-OKX_AMOUNT_MIN = 0.004  # ETH
-OKX_AMOUNT_MAX = 0.0045  # ETH
-OKX_DEPOSIT_NETWORK = 6
+OKX_WITHDRAW_NETWORK = 2  # NETWORK ID
+OKX_AMOUNT_MIN = 0.014  # ETH
+OKX_AMOUNT_MAX = 0.014  # ETH
+
+OKX_BRIDGE_NEED = True  # False or True
+OKX_DEPOSIT_NETWORK = 2  # NETWORK ID
+OKX_DEPOSIT_AMOUNT = 90  # % of MAX TOKEN BALANCE to withdraw from Scroll
+OKX_BRIDGE_MODE = [1]  # BRIDGES
 
 """
 --------------------------------------------------SCROLL BRIDGE---------------------------------------------------------
@@ -87,10 +100,10 @@ ORBITER_AMOUNT_MAX = 0.012  # ETH
                              
     RHINO_CHAIN_ID_FROM(TO) = [2, 3, 10] | One network in list will be chosen
 """
-RHINO_CHAIN_ID_FROM = [2]  # BRIDGE FROM
-RHINO_CHAIN_ID_TO = [10]  # BRIDGE TO
-RHINO_AMOUNT_MIN = 0.001  # # ETH
-RHINO_AMOUNT_MAX = 0.002  # # ETH
+RHINO_CHAIN_ID_FROM = [1]  # BRIDGE FROM
+RHINO_CHAIN_ID_TO = [8]  # BRIDGE TO
+RHINO_AMOUNT_MIN = 0.013  # # ETH
+RHINO_AMOUNT_MAX = 0.014  # # ETH
 
 
 """
@@ -143,8 +156,8 @@ WITHDRAW_LP = False  # True or False
     Harmony = 14         Tenet = 28
                         *zkSync Era = 29
     
-    SOURCE_CHAIN_ZERIUS = [27, 29] | One network in list will be chosen
-    SOURCE_CHAIN_MERKLY = [27, 29] | One network in list will be chosen
+    SOURCE_CHAIN_ZERIUS = [27, 29] | One network in list will be chosen (BRIDGE NFT)
+    SOURCE_CHAIN_MERKLY = [27, 29] | One network in list will be chosen (REFUEL)
     DESTINATION_MERKLY_AMOUNT = {
         1: (0.0016, 0.002), # Chain ID: (min amount, max amount) in destination native**
         2: (0.0002, 0.0005) # Chain ID: (min amount, max amount) in destination native**
@@ -157,10 +170,10 @@ WITHDRAW_LP = False  # True or False
 SOURCE_CHAIN_ZERIUS = [27, 29]  # BRIDGE FROM
 DESTINATION_ZERIUS = [1, 4, 8]
 
-SOURCE_CHAIN_MERKLY = [27, 29]  # REFUEL FROM
+SOURCE_CHAIN_MERKLY = [1]  # REFUEL FROM
 DESTINATION_MERKLY_DATA = {
-    2: (0.03, 0.05),  # Chain ID: (min amount , max amount) in destination native
-    28: (0.04, 0.05)  # Chain ID: (min amount, max amount) in destination native
+    27: (0.01, 0.01),  # Chain ID: (min amount , max amount) in destination native
+    #28: (0.04, 0.05)  # Chain ID: (min amount, max amount) in destination native
 }
 
 """
@@ -289,7 +302,7 @@ AUTO_ROUTES_MODULES_USING = {
     ]
 """
 CLASSIC_ROUTES_MODULES_USING = [
-    ['okx_withdraw'],
+    ['bridge_rhino'],
     ['bridge_layerswap', 'bridge_scroll', 'bridge_orbiter'],
     ['enable_collateral_layerbank', 'deposit_layerbank', None],
     ['swap_izumi', 'swap_openocean'],

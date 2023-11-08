@@ -79,7 +79,7 @@ class Bridge(ABC):
             }
 
     @abstractmethod
-    async def bridge(self):
+    async def bridge(self, *args, **kwargs):
         pass
 
     async def make_request(self, method:str = 'GET', url:str = None, headers:dict = None, params: dict = None,

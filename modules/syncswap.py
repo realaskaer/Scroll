@@ -41,7 +41,7 @@ class SyncSwap(DEX):
             to_token_name = 'ETH'
 
         self.client.logger.info(
-            f'{self.client.info} SyncSwap |  Swap on SyncSwap: {amount} {from_token_name} -> {to_token_name}')
+            f'{self.client.info} SyncSwap | Swap on SyncSwap: {amount} {from_token_name} -> {to_token_name}')
 
         from_token_address, to_token_address = SCROLL_TOKENS[from_token_name], SCROLL_TOKENS[to_token_name]
 

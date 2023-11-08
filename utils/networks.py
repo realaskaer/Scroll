@@ -141,7 +141,7 @@ Linea = Network(
          'https://1rpc.io/linea',
          'https://rpc.linea.build'],
     chain_id=59144,
-    eip1559_support=True,
+    eip1559_support=False,
     token='ETH',
     explorer='https://lineascan.build/'
 )
@@ -150,7 +150,7 @@ Zora = Network(
     name='Zora',
     rpc=['https://rpc.zora.energy'],
     chain_id=7777777,
-    eip1559_support=True,
+    eip1559_support=False,
     token='ETH',
     explorer='https://zora.superscan.network/'
 )
@@ -173,7 +173,7 @@ BSC = Network(
          'https://rpc.ankr.com/bsc',
          'https://1rpc.io/bnb'],
     chain_id=56,
-    eip1559_support=True,
+    eip1559_support=False,
     token='BNB',
     explorer='https://bscscan.com/'
 )

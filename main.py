@@ -1,6 +1,5 @@
 import asyncio
 import sys
-from ctypes import windll
 
 from questionary import Choice, select
 from termcolor import cprint
@@ -95,7 +94,6 @@ def get_one_module():
 
 
 def main():
-    windll.kernel32.SetConsoleTitleW('Scroll Machine v0.0.1')
     print(TITLE)
     cprint(f'\n❤️ Subscribe to my channel: https://t.me/askaer', 'light_cyan', attrs=["blink"])
     cprint(f'\n💵 Donate (Any EVM) --> 0x000000a679C2FB345dDEfbaE3c42beE92c0Fb7A5\n', 'light_cyan')

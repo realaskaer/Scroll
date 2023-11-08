@@ -11,18 +11,19 @@ from settings import (
     OKX_WITHDRAW_NETWORK,
     OKX_AMOUNT_MIN,
     OKX_AMOUNT_MAX,
-    OKX_DEPOSIT_NETWORK
+    OKX_DEPOSIT_NETWORK,
+    OKX_BRIDGE_NEED
 )
 
 
 class OKX(CEX):
     @staticmethod
-    def get_network_name():
+    def get_network_id():
         return {
-            2: 'ARBITRUM_MAINNET',
-            4: 'OPTIMISM_MAINNET',
-            6: 'ZKSYNCERA_MAINNET',
-            7: 'LINEA_MAINNET'
+            2: 1,
+            4: 7,
+            6: 10,
+            7: 4
         }[OKX_DEPOSIT_NETWORK]
 
     async def get_headers(self, request_path: str, method: str = "GET", body: str = ""):
@@ -93,6 +94,9 @@ class OKX(CEX):
 
     @repeater
     async def transfer_from_subaccounts(self):
+
+        self.client.logger.info(f'{self.client.info} OKX | Checking subAccounts balance')
+
         url_sub_list = "https://www.okx.cab/api/v5/users/subaccount/list"
 
         headers = await self.get_headers(request_path=url_sub_list)
@@ -131,7 +135,8 @@ class OKX(CEX):
                 await self.make_request(method="POST", url=url_transfer, data=str(body), headers=headers,
                                         module_name='SubAccount transfer')
 
-                self.client.logger.success(f"{self.client.info} Transfer {sub_balance:.6f} ETH to main account complete")
+                self.client.logger.success(
+                    f"{self.client.info} Transfer {float(sub_balance):.6f} ETH to main account complete")
 
     @repeater
     async def transfer_from_spot_to_funding(self):
@@ -157,16 +162,18 @@ class OKX(CEX):
                 headers = await self.get_headers(request_path=url_transfer, body=str(body), method="POST")
                 await self.make_request(url=url_transfer, data=str(body), method="POST", headers=headers,
                                         module_name='Trading account')
+                self.client.logger.success(
+                    f"{self.client.info} OKX | Transfer {float(ccy['availBal']):.6f} ETH to funding account complete")
                 break
             else:
-                self.client.logger.info(f"{self.client.info} Main trading account balance: 0 ETH")
+                self.client.logger.info(f"{self.client.info} OKX | Main trading account balance: 0 ETH")
                 break
 
     @repeater
     @gas_checker
     async def deposit_to_okx(self):
 
-        amount, amount_in_wei = await self.client.check_and_get_eth_for_deposit()
+        amount_in_wei, amount, _ = await self.client.get_token_balance()
 
         try:
             okx_wallet = self.client.w3.to_checksum_address(OKX_WITHDRAW_LIST[self.client.address])
@@ -174,11 +181,12 @@ class OKX(CEX):
             raise RuntimeError(f'There is no wallet listed for deposit to OKX: {error}')
 
         info = f"{okx_wallet[:10]}....{okx_wallet[-6:]}"
+        network_name = self.client.network.nam
 
         self.client.logger.info(
-            f"{self.client.info} Deposit {amount} ETH from {self.client.network_name} to OKX wallet: {info}")
+            f"{self.client.info} OKX | Deposit {amount * 0.98:.6f} ETH from {network_name} to OKX wallet: {info}")
 
-        tx_params = (await self.client.prepare_transaction(value=amount_in_wei)) | {
+        tx_params = (await self.client.prepare_transaction(value=int(amount_in_wei * 0.98))) | {
             'to': okx_wallet,
             'data': '0x'
         }
@@ -189,11 +197,12 @@ class OKX(CEX):
 
     async def deposit(self):
 
-        # if OKX_DEPOSIT_NETWORK != 6:
+        # if OKX_DEPOSIT_NETWORK != 0:
 
-        await self.client.bridge_from_source(self.get_network_name())
+        if OKX_BRIDGE_NEED:
+            await self.client.bridge_from_source(self.get_network_id())
 
-        await sleep(self, 60, 80)
+            await sleep(self, 60, 80)
 
         await self.deposit_to_okx()
 

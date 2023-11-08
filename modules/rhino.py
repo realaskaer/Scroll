@@ -5,18 +5,11 @@ import base64
 import random
 import asyncio
 from modules import Bridge
-from config import RHINO_CHAIN_INFO
 from datetime import datetime, timezone
 from utils.tools import repeater, gas_checker, sleep
 from eth_account.messages import encode_defunct
 from utils.stark_signature.stark_singature import sign, pedersen_hash, EC_ORDER, private_to_stark_key
 from utils.stark_signature.eth_coder import encrypt_with_public_key, decrypt_with_private_key, get_public_key
-from settings import (
-    RHINO_AMOUNT_MAX,
-    RHINO_AMOUNT_MIN,
-    RHINO_CHAIN_ID_TO,
-    RHINO_CHAIN_ID_FROM
-)
 
 REGISTER_DATA = {
     "types": {
@@ -178,24 +171,6 @@ class Rhino(Bridge):
 
         return json.loads(dtk)['data']
 
-    @gas_checker
-    async def deposit_to_rhino(self, amount, source_chain_info):
-
-        logger_info = f"{self.client.info} Rhino | Deposit {amount} ETH from {self.client.network.name} to Rhino.fi"
-        self.client.logger.info(logger_info)
-
-        if source_chain_info['enabled']:
-            source_chain_address = source_chain_info['contractAddress']
-
-            tx_params = await self.client.prepare_transaction(value=int(amount * 10 ** 18)) | {
-                'data': "0xdb6b5246",
-                'to': self.client.w3.to_checksum_address(source_chain_address)
-            }
-
-            tx_hash = await self.client.send_transaction(tx_params)
-
-            await self.client.verify_transaction(tx_hash)
-
     async def get_vault_id_and_stark_key(self, deversifi_address):
 
         url = "https://api.rhino.fi/v1/trading/r/vaultIdAndStarkKey"
@@ -208,6 +183,25 @@ class Rhino(Bridge):
         }
 
         return await self.make_request(method="GET", url=url, headers=headers, params=params)
+
+    async def get_user_balance(self):
+
+        data = {
+            "nonce": self.nonce,
+            "signature": self.signature,
+            "token": "ETH",
+            "fields": [
+                "balance",
+                "available",
+                "updatedAt"
+            ]
+        }
+
+        url = "https://api.rhino.fi/v1/trading/r/getBalance"
+
+        response = await self.make_request(method="POST", url=url, headers=self.headers, json=data)
+
+        return response[0]['available']
 
     async def get_stark_signature(self, amount_in_wei, expiration_timestamp, tx_nonce, receiver_public_key,
                                   receiver_vault_id, sender_vault_id, token_address):
@@ -228,8 +222,33 @@ class Rhino(Bridge):
         tx_signature = sign(msg_hash=msg_hash, priv_key=stark_dtk_private_key)
         return hex(tx_signature[0]), hex(tx_signature[1])
 
-    #@repeater
+    @gas_checker
+    async def deposit_to_rhino(self, amount, source_chain_info):
+        logger_info = f"{self.client.info} Rhino | Deposit {amount} ETH from {self.client.network.name} to Rhino.fi"
+        self.client.logger.info(logger_info)
+
+        if source_chain_info['enabled']:
+            source_chain_address = source_chain_info['contractAddress']
+
+            tx_params = await self.client.prepare_transaction(value=int(amount * 10 ** 18)) | {
+                'data': "0xdb6b5246",
+                'to': self.client.w3.to_checksum_address(source_chain_address)
+            }
+
+            tx_hash = await self.client.send_transaction(tx_params)
+
+            await self.client.verify_transaction(tx_hash)
+
     async def withdraw_from_rhino(self, rhino_user_config, amount, chain_name):
+
+        while True:
+            await asyncio.sleep(4)
+            if int(amount * 10 ** 8) <= int(await self.get_user_balance()):
+                self.client.logger.success(f"{self.client.info} Rhino | Funds have been received")
+                break
+            self.client.logger.warning(f"{self.client.info} Rhino | Wait a little, while the funds come into Rhino.fi")
+            await asyncio.sleep(1)
+            await sleep(self, 90, 120)
 
         logger_info = f"{self.client.info} Rhino | Withdraw {amount} ETH from Rhino.fi to {chain_name.capitalize()}"
         self.client.logger.info(logger_info)
@@ -282,7 +301,7 @@ class Rhino(Bridge):
 
         self.client.logger.success(f"{self.client.info} Rhino | Withdraw compete")
 
-    async def bridge(self):
+    async def bridge(self, chain_from_id:int, help_okx:bool = False, help_network_id:int = 1):
 
         self.client.logger.info(f"{self.client.info} Rhino | Check previous registration")
 
@@ -290,30 +309,36 @@ class Rhino(Bridge):
 
         if not rhino_user_config['isRegistered']:
             await asyncio.sleep(1)
+
             self.client.logger.info(f"{self.client.info} Rhino | New user on Rhino, make registration")
             await self.reg_new_acc()
+
             await asyncio.sleep(1)
+
             self.client.logger.success(f"{self.client.info} Rhino | Successfully registered")
             rhino_user_config = await self.get_user_config()
         else:
+            await asyncio.sleep(1)
+
             self.client.logger.success(f"{self.client.info} Rhino | Already registered")
 
         await asyncio.sleep(1)
 
-        chain_from_name = RHINO_CHAIN_INFO[random.choice(RHINO_CHAIN_ID_FROM)]
-        chain_to_name = RHINO_CHAIN_INFO[random.choice(RHINO_CHAIN_ID_TO)]
+        chain_from_name, chain_to_name, amount = await self.client.get_bridge_data(chain_from_id, help_okx,
+                                                                                   help_network_id, 'Rhino')
 
-        source_chain_info = rhino_user_config['DVF']['bridgeConfigPerChain'][chain_from_name]
+        _, balance, _ = await self.client.get_token_balance()
 
-        amount = self.client.round_amount(RHINO_AMOUNT_MIN, RHINO_AMOUNT_MAX)
+        if amount < balance:
 
-        logger_info = f"Bridge {amount} ETH from {self.client.network.name} to {chain_to_name.capitalize()}"
-        self.client.logger.info(f"{self.client.info} Rhino | {logger_info}")
+            source_chain_info = rhino_user_config['DVF']['bridgeConfigPerChain'][chain_from_name]
 
-        await asyncio.sleep(1)
+            await asyncio.sleep(1)
 
-        await self.deposit_to_rhino(amount=amount, source_chain_info=source_chain_info)
+            await self.deposit_to_rhino(amount=amount, source_chain_info=source_chain_info)
 
-        await sleep(self, 90, 120)
+            await asyncio.sleep(1)
 
-        await self.withdraw_from_rhino(rhino_user_config=rhino_user_config, amount=amount, chain_name=chain_to_name)
+            await self.withdraw_from_rhino(rhino_user_config=rhino_user_config, amount=amount, chain_name=chain_to_name)
+        else:
+            self.client.logger.error(f"{self.client.info} Rhino | Insufficient balance in {self.client.network.name}")

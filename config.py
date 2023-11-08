@@ -91,11 +91,6 @@ SAFE_CONTRACTS = {
     "fallback_handler"      : '0x2f870a80647BbC554F3a0EBD093f11B4d2a7492A'
 }
 
-MERKLY_CONTRACTS = {
-    'gas_refuel'            : '0x5673B6e6e51dE3479B8deB22dF46B12308db5E1e',
-    'router'                : '0x6dd28C2c5B91DD63b4d4E78EcAC7139878371768'
-}
-
 DMAIL_CONTRACT = {
     'core'                  : '0x47fbe95e981c0df9737b6971b451fb15fdc989d9'
 }
@@ -110,6 +105,44 @@ OMNISEA_CONTRACT = {
     'drop_factory'          : "0x46ce46951d12710d85bc4fe10bb29c6ea5012077"
 }
 
+MERKLY_CONTRACTS_PER_CHAINS = {
+    1: {
+    'gas_refuel'            : '0x4Ae8CEBcCD7027820ba83188DFD73CCAD0A92806',
+    'ONFT'                  : '0xAa58e77238f0E4A565343a89A79b4aDDD744d649'
+    },
+    2: {
+    'gas_refuel'            : '0xB6789dACf323d60F650628dC1da344d502bC41E3',
+    'ONFT'                  : '0x484c402B0c8254BD555B68827239BAcE7F491023'
+    },
+    3: {
+    'gas_refuel'            : '0x6bf98654205B1AC38645880Ae20fc00B0bB9FFCA',
+    'ONFT'                  : '0xF882c982a95F4D3e8187eFE12713835406d11840'
+    },
+    4: {
+    'gas_refuel'            : '0xc9B753d73B17DDb5E87093ff04A9e31845a43af0',
+    'ONFT'                  : '0xDB3Bb6D5a8EeEAfc64C66C176900E6B82b23dd5f'
+    },
+    6: {
+    'gas_refuel'            : '0x0E1f20075C90Ab31FC2Dd91E536e6990262CF76d',
+    'ONFT'                  : '0xa184998eC58dc1dA77a1F9f1e361541257A50CF4'
+    },
+    7: {
+    'gas_refuel'            : '0xD7bA4057f43a7C4d4A34634b2A3151a60BF78f0d',
+    'ONFT'                  : '0xa2C203d7EF78ed80810da8404090f926d67Cd892'
+    },
+    8: {
+    'gas_refuel'            : '0x7dFb5E7808B5eb4fB8b9e7169537575f6fF1a218',
+    'ONFT'                  : '0x6E55472109E6aBE4054a8E8b8d9EdFfCb31032C5'
+    },
+    9: {
+    'gas_refuel'            : '0xE62d19Df93D84b3552498260188D19A772296B10',
+    'ONFT'                  : '0xb58f5110855fBEF7A715d325D60543E7D4c18143'
+    },
+    10: {
+    'gas_refuel'            : '0x5673B6e6e51dE3479B8deB22dF46B12308db5E1e',
+    'ONFT'                  : '0x6dd28C2c5B91DD63b4d4E78EcAC7139878371768'
+    }
+}
 
 LAYERSWAP_CHAIN_NAME = {
     1                       : 'ARBITRUM_MAINNET',

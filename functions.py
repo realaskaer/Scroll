@@ -25,7 +25,8 @@ def get_network_by_chain_id(chain_id):
         9: Polygon_ZKEVM,
         10: zkSyncEra,
         11: Zora,
-        12: zkSyncEra
+        12: zkSyncEra,
+        13: Ethereum
     }[chain_id]
 
 
@@ -49,7 +50,9 @@ async def send_message_dmail(account_number, private_key, network, proxy):
     await worker.send_message()
 
 
-async def bridge_scroll(account_number, private_key, network, proxy):
+async def bridge_scroll(account_number, private_key, _, proxy):
+    network = get_network_by_chain_id(13)
+
     worker = Scroll(await get_client(account_number, private_key, network, proxy))
     await worker.deposit()
 
@@ -130,39 +133,44 @@ async def swap_scrollswap(account_number, private_key, network, proxy):
 
 
 async def bridge_layerswap(account_number, private_key, _, proxy, **kwargs):
-    chain_id_from = random.choice(LAYERSWAP_CHAIN_ID_FROM)
-
-    if kwargs.get('help_okx'):
-        network = get_network_by_chain_id(15)
+    if kwargs.get('help_okx') is True:
+        chain_from_id = 8
     else:
-        network = get_network_by_chain_id(chain_id_from)
+        chain_from_id = random.choice(LAYERSWAP_CHAIN_ID_FROM)
+    network = get_network_by_chain_id(chain_from_id)
 
     worker = LayerSwap(await get_client(account_number, private_key, network, proxy))
-    await worker.bridge(chain_id_from,  **kwargs)
+    await worker.bridge(chain_from_id,  **kwargs)
 
 
-async def bridge_orbiter(account_number, private_key, _, proxy):
-    chain_id_from = random.choice(ORBITER_CHAIN_ID_FROM)
-    network = get_network_by_chain_id(chain_id_from)
+async def bridge_orbiter(account_number, private_key, _, proxy, **kwargs):
+    if kwargs.get('help_okx') is True:
+        chain_from_id = 8
+    else:
+        chain_from_id = random.choice(ORBITER_CHAIN_ID_FROM)
+    network = get_network_by_chain_id(chain_from_id)
 
     worker = Orbiter(await get_client(account_number, private_key, network, proxy))
-    await worker.bridge(chain_id_from)
+    await worker.bridge(chain_from_id, **kwargs)
 
 
-async def bridge_rhino(account_number, private_key, _, proxy):
-    chain_id_from = random.choice(RHINO_CHAIN_ID_FROM)
-    network = get_network_by_chain_id(chain_id_from)
+async def bridge_rhino(account_number, private_key, _, proxy, **kwargs):
+    if kwargs.get('help_okx') is True:
+        chain_from_id = 8
+    else:
+        chain_from_id = random.choice(RHINO_CHAIN_ID_FROM)
+    network = get_network_by_chain_id(chain_from_id)
 
     worker = Rhino(await get_client(account_number, private_key, network, proxy))
-    await worker.bridge()
+    await worker.bridge(chain_from_id, **kwargs)
 
 
 async def refuel_merkly(account_number, private_key, _, proxy):
-
-    network = get_network_by_chain_id(LAYERZERO_WRAPED_NETWORKS[random.choice(SOURCE_CHAIN_MERKLY)])
+    chain_from_id = LAYERZERO_WRAPED_NETWORKS[random.choice(SOURCE_CHAIN_MERKLY)]
+    network = get_network_by_chain_id(chain_from_id)
 
     worker = Merkly(await get_client(account_number, private_key, network, proxy))
-    await worker.refuel()
+    await worker.refuel(chain_from_id)
 
 
 # async def send_message_l2telegraph(account_number, private_key, network, proxy):

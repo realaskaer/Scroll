@@ -9,6 +9,7 @@ from hexbytes import HexBytes
 from utils.networks import Network
 from config import ERC20_ABI, SCROLL_TOKENS
 from web3 import AsyncHTTPProvider, AsyncWeb3
+from config import RHINO_CHAIN_INFO, ORBITER_CHAINS_INFO, LAYERSWAP_CHAIN_NAME
 from settings import (
     GAS_MULTIPLIER,
     UNLIMITED_APPROVE,
@@ -16,7 +17,19 @@ from settings import (
     AMOUNT_MAX,
     MIN_BALANCE,
     DEX_LP_MAX,
-    DEX_LP_MIN
+    DEX_LP_MIN,
+    OKX_BRIDGE_MODE,
+    OKX_DEPOSIT_AMOUNT,
+    LAYERSWAP_AMOUNT_MIN,
+    LAYERSWAP_AMOUNT_MAX,
+    LAYERSWAP_CHAIN_ID_TO,
+    LAYERSWAP_REFUEL,
+    ORBITER_AMOUNT_MIN,
+    ORBITER_AMOUNT_MAX,
+    ORBITER_CHAIN_ID_TO,
+    RHINO_AMOUNT_MAX,
+    RHINO_AMOUNT_MIN,
+    RHINO_CHAIN_ID_TO
 )
 
 
@@ -48,24 +61,77 @@ class Client:
         decimals = max(len(str(min_amount)) - 1, len(str(max_amount)) - 1)
         return round(random.uniform(min_amount, max_amount), decimals)
 
-    async def bridge_from_source(self, network_name) -> None:
-        from functions import bridge_layerswap
+    async def bridge_from_source(self, network_to_id) -> None:
+        from functions import bridge_layerswap, bridge_rhino, bridge_orbiter
+
         self.logger.info(f"{self.info} {self.__class__.__name__} | Bridge balance from {self.network.name}")
 
-        await bridge_layerswap(self.account_number, self.private_key, self.network, self.proxy_init,
-                               help_okx=True, help_network=network_name)
+        id_of_bridge = {
+            1: bridge_rhino,
+            2: bridge_orbiter,
+            3: bridge_layerswap
+        }
 
-    async def check_and_get_eth_for_deposit(self) -> [float, int]:
+        bridge_id = random.choice(OKX_BRIDGE_MODE)
+
+        func = id_of_bridge[bridge_id]
+
+        await asyncio.sleep(1)
+        await func(self.account_number, self.private_key, self.network, self.proxy_init,
+                   help_okx=True, help_network_id=network_to_id)
+
+    async def get_bridge_data(self, chain_from_id:int, help_okx:bool, help_network_id: int, module_name:str):
+        if module_name == 'Rhino':
+            chain_from_name = RHINO_CHAIN_INFO[chain_from_id]
+            chain_to_name = RHINO_CHAIN_INFO[random.choice(RHINO_CHAIN_ID_TO)]
+
+            amount = self.round_amount(RHINO_AMOUNT_MIN, RHINO_AMOUNT_MAX)
+            if help_okx:
+                chain_from_name = RHINO_CHAIN_INFO[8]
+                chain_to_name = RHINO_CHAIN_INFO[help_network_id]
+                amount, _ = await self.check_and_get_eth_for_deposit(OKX_DEPOSIT_AMOUNT)
+
+            return chain_from_name, chain_to_name, amount
+
+        elif module_name == 'LayerSwap':
+            source_chain = LAYERSWAP_CHAIN_NAME[chain_from_id]
+            destination_chain = LAYERSWAP_CHAIN_NAME[random.choice(LAYERSWAP_CHAIN_ID_TO)]
+            source_asset, destination_asset = 'ETH', 'ETH'
+            amount = self.round_amount(LAYERSWAP_AMOUNT_MIN, LAYERSWAP_AMOUNT_MAX)
+            refuel = LAYERSWAP_REFUEL
+            if help_okx:
+                source_chain = LAYERSWAP_CHAIN_NAME[8]
+                destination_chain = LAYERSWAP_CHAIN_NAME[help_network_id]
+                amount, _ = await self.check_and_get_eth_for_deposit(OKX_DEPOSIT_AMOUNT)
+
+            return source_chain, destination_chain, source_asset, destination_asset, amount, refuel
+
+        elif module_name == 'Orbiter':
+            from_chain = ORBITER_CHAINS_INFO[chain_from_id]
+            to_chain = ORBITER_CHAINS_INFO[random.choice(ORBITER_CHAIN_ID_TO)]
+            token_name = 'ETH'
+            amount = self.round_amount(ORBITER_AMOUNT_MIN, ORBITER_AMOUNT_MAX)
+            if help_okx:
+                from_chain = ORBITER_CHAINS_INFO[8]
+                to_chain = ORBITER_CHAINS_INFO[help_network_id]
+                amount, _ = await self.check_and_get_eth_for_deposit(OKX_DEPOSIT_AMOUNT)
+
+            return from_chain, to_chain, token_name, amount
+
+    async def check_and_get_eth_for_deposit(self, okx_percent: int = 0) -> [float, int]:
         from functions import swap_syncswap
         data = await self.get_auto_amount(token_name_search='ETH')
 
         if data is False:
             self.logger.warning(f'{self.info} {self.__class__.__name__} | Not enough ETH! Launching swap module')
 
+            await asyncio.sleep(1)
             await swap_syncswap(self.account_number, self.private_key, self.network, self.proxy_init, help_deposit=True)
 
             percent = round(random.uniform(AMOUNT_MIN, AMOUNT_MAX)) / 100
             balance_in_wei, balance, _ = await self.get_token_balance()
+            if okx_percent:
+                percent = okx_percent
             amount = round(balance * percent, 7)
             amount_in_wei = int(balance_in_wei * percent)
         else:
@@ -84,7 +150,7 @@ class Client:
         await asyncio.sleep(1)
         if eth_balance < amount_from_settings:
             self.logger.warning(f'{self.info} {class_name} | Not enough ETH to add liquidity! Launching swap module')
-
+            await asyncio.sleep(1)
             await swap_openocean(self.account_number, self.private_key, self.network, self.proxy_init,
                                  help_add_liquidity=True, amount_to_help=amount_from_settings)
 

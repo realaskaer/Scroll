@@ -1,15 +1,7 @@
 import json
-import random
 
 from modules import Bridge
 from utils.tools import gas_checker, repeater
-from config import LAYERSWAP_CHAIN_NAME
-from settings import (
-    LAYERSWAP_AMOUNT_MIN,
-    LAYERSWAP_AMOUNT_MAX,
-    LAYERSWAP_CHAIN_ID_TO,
-    LAYERSWAP_REFUEL
-)
 
 
 class LayerSwap(Bridge):
@@ -63,19 +55,11 @@ class LayerSwap(Bridge):
 
     @repeater
     @gas_checker
-    async def bridge(self, chain_id_from, help_okx: bool = False, help_network: str = 'ARBITRUM_MAINNET'):
+    async def bridge(self, chain_from_id, help_okx:bool = False, help_network_id:int = 1):
 
-        if help_okx:
-            source_chain, destination_chain = 'SCROLL_MAINNET', help_network
-            source_asset, destination_asset = 'ETH', 'ETH'
-            amount, _ = await self.client.check_and_get_eth_for_deposit()
-            refuel = False
-        else:
-            source_chain = LAYERSWAP_CHAIN_NAME[chain_id_from]
-            destination_chain = LAYERSWAP_CHAIN_NAME[random.choice(LAYERSWAP_CHAIN_ID_TO)]
-            source_asset, destination_asset = 'ETH', 'ETH'
-            amount = self.client.round_amount(LAYERSWAP_AMOUNT_MIN, LAYERSWAP_AMOUNT_MAX)
-            refuel = LAYERSWAP_REFUEL
+        (source_chain, destination_chain, source_asset,
+         destination_asset, amount, refuel) = await self.client.get_bridge_data(chain_from_id, help_okx,
+                                                                                help_network_id, 'LayerSwap')
 
         bridge_info = f'{self.client.network.name} -> {destination_asset} {destination_chain.capitalize()[:-8]}'
         self.client.logger.info(
@@ -116,6 +100,9 @@ class LayerSwap(Bridge):
                     tx_hash = await self.client.send_transaction(tx_params)
 
                     await self.client.verify_transaction(tx_hash)
+
+                    if get_amount:
+                        return amount_in_wei
 
                 else:
                     raise RuntimeError("Insufficient balance!")

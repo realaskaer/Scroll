@@ -33,7 +33,7 @@ class ScrollSwap(DEX):
         from_token_name, to_token_name, amount, amount_in_wei = await self.client.get_auto_amount()
 
         self.client.logger.info(
-            f'{self.client.info} SpaceFi | Swap on SpaceFi: {amount} {from_token_name} -> {to_token_name}')
+            f'{self.client.info} ScrollSwap | Swap on SpaceFi: {amount} {from_token_name} -> {to_token_name}')
 
         from_token_address, to_token_address = SCROLL_TOKENS[from_token_name], SCROLL_TOKENS[to_token_name]
 

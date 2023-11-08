@@ -1,12 +1,5 @@
-import random
 from modules import Bridge
 from utils.tools import repeater, gas_checker
-from config import ORBITER_CHAINS_INFO
-from settings import (
-    ORBITER_AMOUNT_MIN,
-    ORBITER_AMOUNT_MAX,
-    ORBITER_CHAIN_ID_TO,
-)
 
 
 class Orbiter(Bridge):
@@ -43,12 +36,10 @@ class Orbiter(Bridge):
 
     @repeater
     @gas_checker
-    async def bridge(self, chain_id_from:int):
+    async def bridge(self, chain_from_id:int, help_okx:bool = False, help_network_id:int = 1):
 
-        from_chain = ORBITER_CHAINS_INFO[chain_id_from]
-        to_chain = ORBITER_CHAINS_INFO[random.choice(ORBITER_CHAIN_ID_TO)]
-        token_name = 'ETH'
-        amount = self.client.round_amount(ORBITER_AMOUNT_MIN, ORBITER_AMOUNT_MAX)
+        from_chain, to_chain, token_name, amount = await self.client.get_bridge_data(chain_from_id, help_okx,
+                                                                                     help_network_id, 'Orbiter')
 
         bridge_info = f'{amount} {token_name} from {from_chain["name"]} to {to_chain["name"]}'
         self.client.logger.info(f'{self.client.info} Orbiter | Bridge on Orbiter: {bridge_info}')
