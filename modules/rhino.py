@@ -302,43 +302,48 @@ class Rhino(Bridge):
         self.client.logger.success(f"{self.client.info} Rhino | Withdraw compete")
 
     async def bridge(self, chain_from_id:int, help_okx:bool = False, help_network_id:int = 1):
+        try:
+            self.client.logger.info(f"{self.client.info} Rhino | Check previous registration")
 
-        self.client.logger.info(f"{self.client.info} Rhino | Check previous registration")
-
-        rhino_user_config = await self.get_user_config()
-
-        if not rhino_user_config['isRegistered']:
-            await asyncio.sleep(1)
-
-            self.client.logger.info(f"{self.client.info} Rhino | New user on Rhino, make registration")
-            await self.reg_new_acc()
-
-            await asyncio.sleep(1)
-
-            self.client.logger.success(f"{self.client.info} Rhino | Successfully registered")
             rhino_user_config = await self.get_user_config()
-        else:
-            await asyncio.sleep(1)
 
-            self.client.logger.success(f"{self.client.info} Rhino | Already registered")
+            if not rhino_user_config['isRegistered']:
+                await asyncio.sleep(1)
 
-        await asyncio.sleep(1)
+                self.client.logger.info(f"{self.client.info} Rhino | New user on Rhino, make registration")
+                await self.reg_new_acc()
 
-        chain_from_name, chain_to_name, amount = await self.client.get_bridge_data(chain_from_id, help_okx,
-                                                                                   help_network_id, 'Rhino')
+                await asyncio.sleep(1)
 
-        _, balance, _ = await self.client.get_token_balance()
+                self.client.logger.success(f"{self.client.info} Rhino | Successfully registered")
+                rhino_user_config = await self.get_user_config()
+            else:
+                await asyncio.sleep(1)
 
-        if amount < balance:
-
-            source_chain_info = rhino_user_config['DVF']['bridgeConfigPerChain'][chain_from_name]
-
-            await asyncio.sleep(1)
-
-            await self.deposit_to_rhino(amount=amount, source_chain_info=source_chain_info)
+                self.client.logger.success(f"{self.client.info} Rhino | Already registered")
 
             await asyncio.sleep(1)
 
-            await self.withdraw_from_rhino(rhino_user_config=rhino_user_config, amount=amount, chain_name=chain_to_name)
-        else:
-            self.client.logger.error(f"{self.client.info} Rhino | Insufficient balance in {self.client.network.name}")
+            chain_from_name, chain_to_name, amount = await self.client.get_bridge_data(chain_from_id, help_okx,
+                                                                                       help_network_id, 'Rhino')
+
+            _, balance, _ = await self.client.get_token_balance()
+
+            if amount < balance:
+
+                source_chain_info = rhino_user_config['DVF']['bridgeConfigPerChain'][chain_from_name]
+
+                await asyncio.sleep(1)
+
+                await self.deposit_to_rhino(amount=amount, source_chain_info=source_chain_info)
+
+                await asyncio.sleep(1)
+
+                await self.withdraw_from_rhino(rhino_user_config=rhino_user_config,
+                                               amount=amount, chain_name=chain_to_name)
+            else:
+                self.client.logger.error(
+                    f"{self.client.info} Rhino | Insufficient balance in {self.client.network.name}")
+        except Exception as error:
+            self.client.logger.error(f"{self.client.info} Rhino | Error: {error}")
+
