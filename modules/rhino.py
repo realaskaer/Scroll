@@ -106,7 +106,13 @@ class Rhino(Bridge):
             'signature': self.signature
         }
 
-        return await self.make_request(method='POST', url=url, headers=self.headers, json=data)
+        while True:
+            try:
+                data = await self.make_request(method='POST', url=url, headers=self.headers, json=data)
+                return data
+            except:
+                self.client.logger.warning(f"{self.client.info} Rhino | Get bad API data")
+                await asyncio.sleep(5)
 
     async def get_vault_id(self):
 
