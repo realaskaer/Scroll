@@ -1,17 +1,17 @@
 import random
 
 from settings import DESTINATION_ZERIUS
-from config import ZERIUS_CONTRACT, ZERIUS_ABI, ZERO_ADDRESS, LAYERZERO_NETWORKS_DATA
+from config import ZERIUS_CONTRACT_PER_CHAINS, ZERIUS_ABI, ZERO_ADDRESS, LAYERZERO_NETWORKS_DATA
 from utils.tools import gas_checker, repeater, sleep
 from eth_abi import encode
 from modules import Minter
 
 
 class Zerius(Minter):
-    def __init__(self, client):
+    def __init__(self, client, chain_from_id):
         self.client = client
 
-        self.contract = self.client.get_contract(ZERIUS_CONTRACT['core'], ZERIUS_ABI)
+        self.contract = self.client.get_contract(ZERIUS_CONTRACT_PER_CHAINS[chain_from_id]['ONFT'], ZERIUS_ABI)
 
     async def get_nft_id(self):
         balance_nft = self.contract.functions.balanceOf(self.client.address).call()

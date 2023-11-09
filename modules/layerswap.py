@@ -101,8 +101,6 @@ class LayerSwap(Bridge):
 
                     await self.client.verify_transaction(tx_hash)
 
-                    if get_amount:
-                        return amount_in_wei
 
                 else:
                     raise RuntimeError("Insufficient balance!")

@@ -60,7 +60,7 @@ def auto_generate_route():
             if not MAX_UNQ_CONTACTS:
                 route.append(mod)
             else:
-                if mod in route and len(route) < len(available_modules):
+                if mod in route and len(route) < sum(list(AUTO_ROUTES_MODULES_USING.values())) - 4:
                     continue
                 route.append(mod)
 
@@ -111,6 +111,7 @@ available_modules = [
     ('swap_scrollswap', 2, 0),
     ('wrap_eth', 2, 0),
     ('mint_zerius', 2, 0),
+    ('deploy_contract', 1, 1),
     ('bridge_zerius', 3, 0),
     ('create_omnisea', 3, 0),
     ('create_safe', 3, 1),

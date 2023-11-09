@@ -183,15 +183,19 @@ async def refuel_merkly(account_number, private_key, _, proxy):
 #     await worker.mint_and_bridge()
 
 
-async def mint_zerius(account_number, private_key, network, proxy):
-    worker = Zerius(await get_client(account_number, private_key, network, proxy))
+async def mint_zerius(account_number, private_key, _, proxy):
+    chain_from_id = LAYERZERO_WRAPED_NETWORKS[random.choice(SOURCE_CHAIN_ZERIUS)]
+    network = get_network_by_chain_id(chain_from_id)
+
+    worker = Zerius(await get_client(account_number, private_key, network, proxy), chain_from_id)
     await worker.mint()
 
 
 async def bridge_zerius(account_number, private_key, _, proxy):
-    network = get_network_by_chain_id(LAYERZERO_WRAPED_NETWORKS[random.choice(SOURCE_CHAIN_ZERIUS)])
+    chain_from_id = LAYERZERO_WRAPED_NETWORKS[random.choice(SOURCE_CHAIN_ZERIUS)]
+    network = get_network_by_chain_id(chain_from_id)
 
-    worker = Zerius(await get_client(account_number, private_key, network, proxy))
+    worker = Zerius(await get_client(account_number, private_key, network, proxy), chain_from_id)
     await worker.bridge()
 
 

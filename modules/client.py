@@ -85,7 +85,14 @@ class Client:
             chain_from_name = RHINO_CHAIN_INFO[chain_from_id]
             chain_to_name = RHINO_CHAIN_INFO[random.choice(RHINO_CHAIN_ID_TO)]
 
-            amount = self.round_amount(RHINO_AMOUNT_MIN, RHINO_AMOUNT_MAX)
+            if isinstance(RHINO_AMOUNT_MIN, str):
+                _, amount, _ = await self.get_token_balance()
+
+                percent = round(random.uniform(int(RHINO_AMOUNT_MIN), int(RHINO_AMOUNT_MAX))) / 100
+                amount = round(amount * percent, 6)
+            else:
+                amount = self.round_amount(RHINO_AMOUNT_MIN, RHINO_AMOUNT_MAX)
+
             if help_okx:
                 chain_from_name = RHINO_CHAIN_INFO[8]
                 chain_to_name = RHINO_CHAIN_INFO[help_network_id]
@@ -97,8 +104,15 @@ class Client:
             source_chain = LAYERSWAP_CHAIN_NAME[chain_from_id]
             destination_chain = LAYERSWAP_CHAIN_NAME[random.choice(LAYERSWAP_CHAIN_ID_TO)]
             source_asset, destination_asset = 'ETH', 'ETH'
-            amount = self.round_amount(LAYERSWAP_AMOUNT_MIN, LAYERSWAP_AMOUNT_MAX)
             refuel = LAYERSWAP_REFUEL
+
+            if isinstance(LAYERSWAP_AMOUNT_MIN, str):
+                _, amount, _ = await self.get_token_balance()
+                percent = round(random.uniform(int(LAYERSWAP_AMOUNT_MIN), int(LAYERSWAP_AMOUNT_MAX))) / 100
+                amount = round(amount * percent, 6)
+            else:
+                amount = self.round_amount(LAYERSWAP_AMOUNT_MIN, LAYERSWAP_AMOUNT_MAX)
+
             if help_okx:
                 source_chain = LAYERSWAP_CHAIN_NAME[8]
                 destination_chain = LAYERSWAP_CHAIN_NAME[help_network_id]
@@ -110,7 +124,14 @@ class Client:
             from_chain = ORBITER_CHAINS_INFO[chain_from_id]
             to_chain = ORBITER_CHAINS_INFO[random.choice(ORBITER_CHAIN_ID_TO)]
             token_name = 'ETH'
-            amount = self.round_amount(ORBITER_AMOUNT_MIN, ORBITER_AMOUNT_MAX)
+
+            if isinstance(ORBITER_AMOUNT_MIN, str):
+                _, amount, _ = await self.get_token_balance()
+                percent = round(random.uniform(int(ORBITER_AMOUNT_MIN), int(ORBITER_AMOUNT_MAX))) / 100
+                amount = round(amount * percent, 6)
+            else:
+                amount = self.round_amount(ORBITER_AMOUNT_MIN, ORBITER_AMOUNT_MAX)
+
             if help_okx:
                 from_chain = ORBITER_CHAINS_INFO[8]
                 to_chain = ORBITER_CHAINS_INFO[help_network_id]
@@ -244,7 +265,6 @@ class Client:
 
                 tx_params['maxPriorityFeePerGas'] = max_priority_fee_per_gas
                 tx_params['maxFeePerGas'] = max_fee_per_gas
-
             else:
                 tx_params['gasPrice'] = await self.w3.eth.gas_price
 

@@ -6,7 +6,7 @@ from hashlib import sha256
 from modules import CEX
 from datetime import datetime, timezone
 from utils.tools import repeater, sleep, gas_checker
-from config import OKX_NETWORKS_NAME, OKX_WITHDRAW_LIST
+from config import OKX_NETWORKS_NAME
 from settings import (
     OKX_WITHDRAW_NETWORK,
     OKX_AMOUNT_MIN,
@@ -67,7 +67,7 @@ class OKX(CEX):
         network_data = networks_data[network_name]
         amount = self.client.round_amount(OKX_AMOUNT_MIN, OKX_AMOUNT_MAX)
 
-        self.client.logger.info(f"{self.client.info} Withdraw {amount} ETH to {network_name[4:]}")
+        self.client.logger.info(f"{self.client.info} OKX | Withdraw {amount} ETH to {network_name[4:]}")
 
         if network_data['can_withdraw']:
 
@@ -85,7 +85,8 @@ class OKX(CEX):
             await self.make_request(method='POST', url=url, data=str(body), headers=headers,
                                     module_name='Withdraw')
 
-            self.client.logger.success(f"{self.client.info} Withdraw complete. Note: wait 1-2 minute to receive funds")
+            self.client.logger.success(
+                f"{self.client.info} OKX | Withdraw complete. Note: wait 1-2 minute to receive funds")
 
             await sleep(self, 70, 140)
 
@@ -136,7 +137,7 @@ class OKX(CEX):
                                         module_name='SubAccount transfer')
 
                 self.client.logger.success(
-                    f"{self.client.info} Transfer {float(sub_balance):.6f} ETH to main account complete")
+                    f"{self.client.info} OKX | Transfer {float(sub_balance):.6f} ETH to main account complete")
 
     @repeater
     async def transfer_from_spot_to_funding(self):
@@ -149,7 +150,7 @@ class OKX(CEX):
         for ccy in balance:
             if ccy['ccy'] == 'ETH' and ccy['availBal'] != '0':
 
-                self.client.logger.info(f"{self.client.info} Main trading account balance: {ccy['availBal']} ETH")
+                self.client.logger.info(f"{self.client.info} OKX | Main trading account balance: {ccy['availBal']} ETH")
 
                 body = {
                     "ccy": 'ETH',
@@ -176,12 +177,19 @@ class OKX(CEX):
         amount_in_wei, amount, _ = await self.client.get_token_balance()
 
         try:
-            okx_wallet = self.client.w3.to_checksum_address(OKX_WITHDRAW_LIST[self.client.address])
+            with open('./data/okx_withdraw_list.json') as file:
+                from json import load
+                okx_withdraw_list = load(file)
+        except:
+            self.client.logger.info(f"{self.client.info} Scroll | Bad data in okx_wallet_list.json")
+
+        try:
+            okx_wallet = self.client.w3.to_checksum_address(okx_withdraw_list[self.client.address])
         except Exception as error:
             raise RuntimeError(f'There is no wallet listed for deposit to OKX: {error}')
 
         info = f"{okx_wallet[:10]}....{okx_wallet[-6:]}"
-        network_name = self.client.network.nam
+        network_name = self.client.network.name
 
         self.client.logger.info(
             f"{self.client.info} OKX | Deposit {amount * 0.98:.6f} ETH from {network_name} to OKX wallet: {info}")
@@ -197,7 +205,7 @@ class OKX(CEX):
 
     async def deposit(self):
 
-        # if OKX_DEPOSIT_NETWORK != 0:
+        # if OKX_DEPOSIT_NETWORK != 6:
 
         if OKX_BRIDGE_NEED:
             await self.client.bridge_from_source(self.get_network_id())

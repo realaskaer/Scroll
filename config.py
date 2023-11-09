@@ -81,9 +81,36 @@ IZUMI_CONTRACTS = {
     "liquidity_manager"     : '0x1502d025BfA624469892289D45C0352997251728'
 }
 
-ZERIUS_CONTRACT = {
-    "core"                  :"0xeb22c3e221080ead305cae5f37f0753970d973cd"
+ZERIUS_CONTRACT_PER_CHAINS = {
+    1: {
+    'ONFT'                  : '0x250c34D06857b9C0A036d44F86d2c1Abe514B3Da'
+    },
+    2: {
+    'ONFT'                  : '0x5188368a92B49F30f4Cf9bEF64635bCf8459c7A7'
+    },
+    3: {
+    'ONFT'                  : '0x178608fFe2Cca5d36f3Fc6e69426c4D3A5A74A41'
+    },
+    4: {
+    'ONFT'                  : '0x5188368a92B49F30f4Cf9bEF64635bCf8459c7A7'
+    },
+    6: {
+    'ONFT'                  : '0x178608fFe2Cca5d36f3Fc6e69426c4D3A5A74A41'
+    },
+    7: {
+    'ONFT'                  : '0x178608fFe2Cca5d36f3Fc6e69426c4D3A5A74A41'
+    },
+    8: {
+    'ONFT'                  : '0xEB22C3e221080eAD305CAE5f37F0753970d973Cd'
+    },
+    9: {
+    'ONFT'                  : '0x4c5AeDA35d8F0F7b67d6EB547eAB1df75aA23Eaf'
+    },
+    10: {
+    'ONFT'                  : '0x7dA50bD0fb3C2E868069d9271A2aeb7eD943c2D6'
+    }
 }
+
 
 SAFE_CONTRACTS = {
     "proxy_factory"         : '0xa6b71e26c5e0845f74c812102ca7114b6a896ab2',
@@ -315,19 +342,11 @@ LAYERZERO_NETWORKS_DATA = {
 
 HELP_SOFTWARE = True  # True or False | True = You help me 1% amount of transactions on aggregator`s
 
-with open('data/contact_data.json') as file:
-    import json
-    CONTRACT_DATA = json.load(file)
-
 with open('data/wallets.txt') as file:
     WALLETS = [row.strip() for row in file]
 
 with open('data/okx_wallets.txt') as file:
     OKX_WALLETS = [row.strip() for row in file]
-
-with open('data/okx_withdraw_list.json') as file:
-    from json import load
-    OKX_WITHDRAW_LIST = load(file)
 
 with open('data/proxies.txt') as file:
     PROXIES = [row.strip() for row in file]

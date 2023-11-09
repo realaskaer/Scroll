@@ -30,7 +30,7 @@ OKX_WITHDRAW_NETWORK = 2  # NETWORK ID
 OKX_AMOUNT_MIN = 0.014  # ETH
 OKX_AMOUNT_MAX = 0.014  # ETH
 
-OKX_BRIDGE_NEED = True  # False or True
+OKX_BRIDGE_NEED = False  # False or True
 OKX_DEPOSIT_NETWORK = 2  # NETWORK ID
 OKX_DEPOSIT_AMOUNT = 90  # % of MAX TOKEN BALANCE to withdraw from Scroll
 OKX_BRIDGE_MODE = [1]  # BRIDGES
@@ -38,20 +38,23 @@ OKX_BRIDGE_MODE = [1]  # BRIDGES
 """
 --------------------------------------------------SCROLL BRIDGE---------------------------------------------------------
     Official bridge on Scroll. Specify the minimum and maximum of deposit/withdraw in ETH
+    You can specify the percentage in quotes and the software will use this setting as % of balance 
     
-    SCROLL_DEP_MIN = 0.01 ( ETH )
-    SCROLL_DEP_MAX = 0.02 ( ETH )
+    SCROLL_DEP_MIN = 0.01 ( ETH ) or "10" ( % )
+    SCROLL_DEP_MAX = 0.02 ( ETH ) or "20" ( % )
     SCROLL_WITHDRAW_MIN = 0.02 ( ETH )
     SCROLL_WITHDRAW_MAX = 0.02 ( ETH )
 """
-SCROLL_DEP_MIN = 0.01  # ETH
-SCROLL_DEP_MAX = 0.02  # ETH
+SCROLL_DEP_PERCENT = 70  # %
+SCROLL_DEP_MIN = 0.01  # ETH or %
+SCROLL_DEP_MAX = 0.02  # ETH or %
 SCROLL_WITHDRAW_MIN = 0.001  # ETH
 SCROLL_WITHDRAW_MAX = 0.002  # ETH
 
 """
 ------------------------------------------------LayerSwap BRIDGE--------------------------------------------------------
     Check available tokens and networks for bridge before setting values. Works only with ETH
+    You can specify the percentage in quotes and the software will use this setting as % of balance 
     Don't forget to insert your API_KEY
        
     Arbitrum = 1            Optimism = 7
@@ -66,13 +69,14 @@ SCROLL_WITHDRAW_MAX = 0.002  # ETH
 """
 LAYERSWAP_CHAIN_ID_FROM = [2, 10]  # BRIDGE FROM
 LAYERSWAP_CHAIN_ID_TO = [11]  # BRIDGE TO
-LAYERSWAP_AMOUNT_MIN = 0.018  # ETH
-LAYERSWAP_AMOUNT_MAX = 0.019  # ETH
+LAYERSWAP_AMOUNT_MIN = 0.018  # ETH or %
+LAYERSWAP_AMOUNT_MAX = 0.019  # ETH or %
 LAYERSWAP_REFUEL = False  # True or False
 
 """
 ------------------------------------------------ORBITER BRIDGE----------------------------------------------------------
     Check available tokens and networks for bridge before setting values. Works only with ETH
+    You can specify the percentage in quotes and the software will use this setting as % of balance 
 
     Arbitrum = 1            Optimism = 7
     Arbitrum Nova = 2       Scroll = 8  
@@ -85,25 +89,27 @@ LAYERSWAP_REFUEL = False  # True or False
 """
 ORBITER_CHAIN_ID_FROM = [2, 10, 11]  # BRIDGE FROM
 ORBITER_CHAIN_ID_TO = [5]  # BRIDGE TO
-ORBITER_AMOUNT_MIN = 0.009  # ETH
-ORBITER_AMOUNT_MAX = 0.012  # ETH
+ORBITER_AMOUNT_MIN = 0.009  # ETH or %
+ORBITER_AMOUNT_MAX = 0.012  # ETH or %
 
 """
 ------------------------------------------------RHINO BRIDGE----------------------------------------------------------
     Check networks for bridge before setting values. Works only with ETH.
-
-    Arbitrum = 1            Polygon = 6
+    You can specify the percentage in quotes and the software will use this setting as % of balance 
+    
+    Arbitrum = 1           *Polygon = 6
     Arbitrum Nova = 2       Optimism = 7
     Base = 3                Scroll = 8  
-    Linea = 4               Polygon ZKEVM = 9       
+    Linea = 4              *Polygon ZKEVM = 9       
     Manta = 5               zkSync Era = 10            
-                             
+    
+    * -   
     RHINO_CHAIN_ID_FROM(TO) = [2, 3, 10] | One network in list will be chosen
 """
-RHINO_CHAIN_ID_FROM = [1]  # BRIDGE FROM
-RHINO_CHAIN_ID_TO = [8]  # BRIDGE TO
-RHINO_AMOUNT_MIN = 0.013  # # ETH
-RHINO_AMOUNT_MAX = 0.014  # # ETH
+RHINO_CHAIN_ID_FROM = [8]  # BRIDGE FROM
+RHINO_CHAIN_ID_TO = [1]  # BRIDGE TO
+RHINO_AMOUNT_MIN = "10"  # ETH or %
+RHINO_AMOUNT_MAX = "20"  # ETH or %
 
 
 """
@@ -172,8 +178,8 @@ DESTINATION_ZERIUS = [1, 4, 8]
 
 SOURCE_CHAIN_MERKLY = [1]  # REFUEL FROM
 DESTINATION_MERKLY_DATA = {
-    27: (0.01, 0.01),  # Chain ID: (min amount , max amount) in destination native
-    #28: (0.04, 0.05)  # Chain ID: (min amount, max amount) in destination native
+    27: (0.0003, 0.0004),  # Chain ID: (min amount , max amount) in destination native
+    28: (0.04, 0.05)  # Chain ID: (min amount, max amount) in destination native
 }
 
 """
@@ -207,7 +213,7 @@ TRANSFER_MAX = 0.00005  # ETH
     GAS_MULTIPLIER = 1.1 | multiply gas limit by this value
     UNLIMITED_APPROVE = False | unlimited approve for spender contract (2**256-1 of needed tokens)
 """
-SOFTWARE_MODE = 0  # 0 / 1
+SOFTWARE_MODE = 1  # 0 / 1
 WALLETS_TO_WORK = 0  # 0 / 4, 20 / [5, 25]
 TX_COUNT = [70, 80]  # [min, max] will be chosen at random between
 MAX_UNQ_CONTACTS = True  # True or False
@@ -223,7 +229,7 @@ MAXIMUM_RETRY = 1  # Times
 SLEEP_TIME_RETRY = 5  # Second
 
 '------------------------------------------------PROXY CONTROL---------------------------------------------------------'
-USE_PROXY = True  # True or False
+USE_PROXY = False  # True or False
 
 '-----------------------------------------------APPROVE CONTROL--------------------------------------------------------'
 UNLIMITED_APPROVE = False  # True or False
@@ -269,7 +275,6 @@ AUTO_ROUTES_MODULES_USING = {
     'enable_collateral_layerbank'         : 1,  # including disable
     'swap_izumi'                          : 1,
     'swap_openocean'                      : 1,
-    'swap_spacefi'                        : 1,
     'swap_syncswap'                       : 1,
     'swap_scrollswap'                     : 1,
     'deploy_contract'                     : 1,  # deploy your own contract
@@ -302,7 +307,8 @@ AUTO_ROUTES_MODULES_USING = {
     ]
 """
 CLASSIC_ROUTES_MODULES_USING = [
-    ['bridge_rhino'],
+    ['refuel_merkly'],
+    ['deploy_contract'],
     ['bridge_layerswap', 'bridge_scroll', 'bridge_orbiter'],
     ['enable_collateral_layerbank', 'deposit_layerbank', None],
     ['swap_izumi', 'swap_openocean'],

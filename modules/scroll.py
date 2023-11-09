@@ -11,7 +11,6 @@ from settings import (
 )
 from config import (
     WETH_ABI,
-    CONTRACT_DATA,
     SCROLL_TOKENS,
     SCROLL_CONTRACTS,
     SCROLL_DEPOSIT_ABI,
@@ -129,11 +128,18 @@ class Scroll(Blockchain):
     @gas_checker
     async def deploy_contract(self):
 
+        try:
+            with open('data/contact_data.json') as file:
+                from json import load
+                contract_data = load(file)
+        except:
+            self.client.logger.info(f"{self.client.info} Scroll | Bad data in contract_json.json")
+
         self.client.logger.info(f"{self.client.info} Scroll | Deploy contract")
 
         tx_data = await self.client.prepare_transaction()
 
-        contract = self.client.w3.eth.contract(abi=CONTRACT_DATA['abi'], bytecode=CONTRACT_DATA['bytecode'])
+        contract = self.client.w3.eth.contract(abi=contract_data['abi'], bytecode=contract_data['bytecode'])
 
         transaction = await contract.constructor().build_transaction(tx_data)
 
