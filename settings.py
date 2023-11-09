@@ -100,10 +100,10 @@ ORBITER_AMOUNT_MAX = 0.012  # ETH or %
     Arbitrum = 1           *Polygon = 6
     Arbitrum Nova = 2       Optimism = 7
     Base = 3                Scroll = 8  
-    Linea = 4              *Polygon ZKEVM = 9       
+    Linea = 4               Polygon ZKEVM = 9       
     Manta = 5               zkSync Era = 10            
     
-    * -   
+    * - Not support in RHINO_CHAIN_ID_FROM
     RHINO_CHAIN_ID_FROM(TO) = [2, 3, 10] | One network in list will be chosen
 """
 RHINO_CHAIN_ID_FROM = [8]  # BRIDGE FROM
